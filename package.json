@@ -5,6 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node .",
+    "deploy": "firebase deploy",
     "build": "browserify -d -t partialify -e dashboard/index.js -o public/dashboard.js",
     "dev": "watchify -d -t partialify -e dashboard/index.js -o public/dashboard.js"
   },
@@ -17,6 +18,7 @@
   },
   "devDependencies": {
     "browserify": "^10.2.1",
+    "firebase-tools": "^3.10.1",
     "moment": "^2.10.3",
     "partialify": "^3.1.3",
     "vue": "^0.11.10",
