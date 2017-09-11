@@ -1,3 +1,3 @@
 var Firebase = require('firebase')
 
-module.exports = new Firebase('https://webhooks.firebaseio.com')
+module.exports = new Firebase('https://webhooks-kunst-cloud.firebaseio.com')
