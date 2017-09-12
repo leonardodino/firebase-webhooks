@@ -13,7 +13,6 @@ module.exports = {
 				.then(function (auth) {
 					firebase.database().ref('users').child(auth.user.uid).update({
 						updated_at: Firebase.database.ServerValue.TIMESTAMP,
-						last_auth: auth
 					})
 				})
 				.catch(function (err) {
