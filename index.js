@@ -1,22 +1,29 @@
-var Firebase = require('firebase')
+var firebase = require('firebase')
 var request = require('superagent')
+var admin = require('firebase-admin')
+var { URL } = require('url')
 
-var baseRef = new Firebase(process.env.FIREBASE_URL)
+const {FIREBASE_SERVICE_ACCOUNT_JSON, FIREBASE_URL} = process.env
 
-baseRef.authWithCustomToken(process.env.FIREBASE_SECRET, function (err, result) {
-	if (err) throw err
+if(!FIREBASE_SERVICE_ACCOUNT_JSON || !FIREBASE_URL){
+	console.error('wrong env')
+	process.exit(1)
+}
 
-	bindUsers(baseRef.child('hooks'))
+admin.initializeApp({
+  credential: admin.credential.cert(JSON.parse(FIREBASE_SERVICE_ACCOUNT_JSON)),
+  databaseURL: FIREBASE_URL,
 })
 
+var db = admin.database()
+db.ref('/').once('value', () => bindUsers(db.ref('hooks')), err => {throw err})
 
 var hooks = {}
 
-
 function bindUsers (ref) {
 	ref.on('child_added', function (snapshot) {
-		console.log('Got user', snapshot.key())
-		bindHooks(snapshot.ref())
+		console.log('Got user', snapshot.key)
+		bindHooks(snapshot.ref)
 	}, function (err) {
 		console.error(err)
 	})
@@ -39,7 +46,7 @@ function bindHooks (ref) {
 }
 
 function unbindHook (hook) {
-	var id = hook.ref().toString()
+	var id = hook.ref.toString()
 	var unhook = hooks[id]
 	if (!unhook) return console.log('no unhook for:', id)
 
@@ -48,12 +55,12 @@ function unbindHook (hook) {
 }
 
 function bindHook (hook) {
-	var id = hook.ref().toString()
+	var id = hook.ref.toString()
 	var opts = hook.val()
 
 	function update (lastResponse) {
-		hook.ref().update({
-			updated_at: Firebase.ServerValue.TIMESTAMP,
+		hook.ref.update({
+			updated_at: admin.database.ServerValue.TIMESTAMP,
 			last_response: lastResponse,
 			has_error: !!lastResponse.error
 		}, function (err) {
@@ -62,7 +69,16 @@ function bindHook (hook) {
 	}
 
 	try {
-		var ref = new Firebase(opts.ref)
+		var url = new URL(opts.ref)
+		var app = null
+
+		try{
+			app = firebase.initializeApp({databaseURL: url.origin}, url.origin)
+		}catch(err){
+			console.log('Could not create app', err)
+		}
+		app = app || firebase.app(url.origin)
+		var ref = app.database().ref(url.pathname)
 	}
 	catch (err) {
 		console.error('Could not create ref:', opts.ref, err)
@@ -83,11 +99,13 @@ function bindHook (hook) {
 					ref: opts.ref,
 					type: opts.event
 				},
-				ref: snapshot.ref().toString(),
-				key: snapshot.key(),
+				ref: snapshot.ref.toString(),
+				key: snapshot.key,
 				previous: prev,
 				value: snapshot.exportVal()
 			}
+
+			console.log('sending...', opts.url, payload)
 
 			request
 				.post(opts.url)
@@ -123,22 +141,7 @@ function bindHook (hook) {
 		hooks[id] = function () {
 			ref.off(opts.event, handler)
 		}
-	}
-
-	if (opts.token) {
-		ref.authWithCustomToken(opts.token, function (err, auth) {
-			if (err) {
-				console.error('Could not authenticate ref:', opts, hook.ref().toString(), err)
-				update({
-					error: 'Could not authenticate Firebase reference with provided custom token/secret.',
-					message: err.message
-				})
-				return
-			}
-
-			bind()
-		})
-		return
+		console.log(hooks)
 	}
 
 	bind()
