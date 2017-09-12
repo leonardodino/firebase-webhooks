@@ -52,8 +52,7 @@ module.exports = {
 	methods: {
 		remove: function (event, ref) {
 			event.preventDefault()
-
-			new Firebase(ref).remove(function (err) {
+			new firebase.database().ref(ref).remove(function (err) {
 				if (err) console.error('Could not remove hook:', err)
 			})
 		}

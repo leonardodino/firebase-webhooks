@@ -7,20 +7,21 @@ module.exports = {
 	methods: {
 		login: function (event) {
 			event.preventDefault()
+			var provider = new Firebase.auth.GithubAuthProvider();
 
-			firebase.authWithOAuthPopup('github', function (err, auth) {
-				if (err) {
-					console.log('Login failed:', err)
-					alert('Login failed.\n\n' + err.message)
-				}
-
-				if (auth) {
-					firebase.child('users').child(auth.uid).update({
-						updated_at: Firebase.ServerValue.TIMESTAMP,
+			firebase.auth().signInWithPopup(provider)
+				.then(function (auth) {
+					firebase.database().ref('users').child(auth.user.uid).update({
+						updated_at: firebase.database.ServerValue.TIMESTAMP,
 						last_auth: auth
 					})
-				}
-			})
+				})
+				.catch(function (err) {
+					if (err) {
+						console.log('Login failed:', err)
+						alert('Login failed.\n\n' + err.message)
+					}
+				})
 		}
 	}
 }

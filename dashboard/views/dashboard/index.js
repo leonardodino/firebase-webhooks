@@ -4,8 +4,8 @@ var firebase = require('../../firebase')
 var events = require('./firebase-events')
 
 function hooksRef () {
-	var auth = firebase.getAuth()
-	return firebase.child('hooks').child(auth.uid)
+	var auth = firebase.auth().currentUser
+	return firebase.database().ref('hooks').child(auth.uid)
 }
 
 module.exports = {
@@ -35,7 +35,7 @@ module.exports = {
 				token: this.token && this.token !== '' ? this.token : null,
 				event: this.event,
 				url: this.url,
-				created_at: Firebase.ServerValue.TIMESTAMP
+				created_at: Firebase.database.ServerValue.TIMESTAMP,
 			}, function (err) {
 				if (err) console.error('Could not add hook:', err)
 			})
@@ -47,12 +47,13 @@ module.exports = {
 		logout: function (event) {
 			event.preventDefault()
 			console.log('logging out')
-			firebase.unauth()
+			firebase.auth().signOut()
 		}
 	},
 	created: function () {
-		firebase.onAuth(function (authData) {
-			this.hooks = null
+		var self = this
+		firebase.auth().onAuthStateChanged(function (authData) {
+			self.hooks = null
 			if (!authData) return
 
 			console.log('fetching hooks')
@@ -61,17 +62,17 @@ module.exports = {
 				console.log('got hooks', snapshot.val())
 				var hooks = []
 
-				snapshot.forEach(function (hook) {
+				snapshot.forEach(function (hook){
 					var val = hook.val()
 					// add full reference path to hook data
-					val.id = hook.ref().toString()
+					val.id = hook.ref.toString()
 					hooks.push(val)
 				})
 
-				this.hooks = hooks
+				self.hooks = hooks
 			}, function (err) {
 				console.error('Could not get hooks:', err)
-			}, this)
-		}, this)
+			})
+		})
 	}
 }

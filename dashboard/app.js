@@ -10,8 +10,9 @@ module.exports = {
 		isLoggedIn: false
 	},
 	created: function () {
-		firebase.onAuth(function (authData) {
-			this.isLoggedIn = !!authData
-		}, this)
+		var self = this
+		firebase.auth().onAuthStateChanged(function (authData) {
+			self.isLoggedIn = !!authData
+		})
 	}
 }
