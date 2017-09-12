@@ -5,7 +5,7 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node .",
-    "deploy": "firebase deploy",
+    "deploy": "npm run build && firebase deploy",
     "build": "browserify -d -t partialify -e dashboard/index.js -o public/dashboard.js",
     "dev": "watchify -d -t partialify -e dashboard/index.js -o public/dashboard.js"
   },
