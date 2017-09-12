@@ -12,7 +12,7 @@ module.exports = {
 			firebase.auth().signInWithPopup(provider)
 				.then(function (auth) {
 					firebase.database().ref('users').child(auth.user.uid).update({
-						updated_at: firebase.database.ServerValue.TIMESTAMP,
+						updated_at: Firebase.database.ServerValue.TIMESTAMP,
 						last_auth: auth
 					})
 				})
