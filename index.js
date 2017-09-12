@@ -9,9 +9,12 @@ if(!FIREBASE_SERVICE_ACCOUNT_JSON || !FIREBASE_URL){
 	console.error('wrong env')
 	process.exit(1)
 }
+var parsed = JSON.parse(FIREBASE_SERVICE_ACCOUNT_JSON)
+var serviceAccount = Object.assign({}, parsed, {private_key: parsed.private_key.replace(/\\n/g, '\n')})
+
 
 admin.initializeApp({
-  credential: admin.credential.cert(JSON.parse(FIREBASE_SERVICE_ACCOUNT_JSON)),
+  credential: admin.credential.cert(serviceAccount),
   databaseURL: FIREBASE_URL,
 })
 
