@@ -20,7 +20,6 @@ module.exports = {
 			events: events,
 			// init form fields
 			ref: null,
-			token: null,
 			event: events[0],
 			url: null
 		}
@@ -32,7 +31,6 @@ module.exports = {
 
 			hooksRef().push({
 				ref: this.ref,
-				token: this.token && this.token !== '' ? this.token : null,
 				event: this.event,
 				url: this.url,
 				created_at: Firebase.database.ServerValue.TIMESTAMP,
@@ -41,7 +39,6 @@ module.exports = {
 			})
 
 			this.ref = null
-			this.token = null
 			this.url = null
 		},
 		logout: function (event) {
