@@ -1,4 +1,4 @@
-var Firebase = require('firebase')
+var firebase = require('../../firebase')
 var moment = require('moment')
 
 var FIREBASE_RE = /^https:\/\/(.*?)\.firebaseio\.com(?:\/(.*))?$/i
@@ -52,7 +52,7 @@ module.exports = {
 	methods: {
 		remove: function (event, ref) {
 			event.preventDefault()
-			new firebase.database().ref(ref).remove(function (err) {
+			firebase.database().refFromURL(ref).remove(function (err) {
 				if (err) console.error('Could not remove hook:', err)
 			})
 		}
